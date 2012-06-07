@@ -1,0 +1,7 @@
+Changes
+Makefile.PL
+MANIFEST
+README
+t/Bio-Graphics-DecoratedGene.t
+lib/Bio/Graphics/Glyph/decorated_gene.pm
+lib/Bio/Graphics/Glyph/decorated_transcript.pm

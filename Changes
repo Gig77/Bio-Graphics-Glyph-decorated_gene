@@ -1,0 +1,6 @@
+Revision history for Perl extension Bio::Graphics::Glyph::DecoratedGene.
+
+0.01  Wed Jun  6 15:25:43 2012
+	- original version; created by h2xs 1.23 with options
+		-AX Bio::Graphics::Glyph::DecoratedGene
+
