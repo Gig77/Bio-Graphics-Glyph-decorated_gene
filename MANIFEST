@@ -2,6 +2,6 @@ Changes
 Makefile.PL
 MANIFEST
 README
-t/Bio-Graphics-DecoratedGene.t
+t/decorated_gene.t
 lib/Bio/Graphics/Glyph/decorated_gene.pm
 lib/Bio/Graphics/Glyph/decorated_transcript.pm

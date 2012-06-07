@@ -1432,7 +1432,6 @@ Please report all errors.
 
 =head1 SEE ALSO
 
-
 L<Bio::Graphics::Panel>,
 L<Bio::Graphics::Glyph>,
 L<Bio::Graphics::Glyph::decorated_gene>,
@@ -1440,7 +1439,7 @@ L<Bio::Graphics::Glyph::processed_transcript>
 
 =head1 AUTHOR
 
-Christian Frech E<lt>cfa24@sfu.caE<gt>
+Christian Frech E<lt>frech.christian@gmail.comE<gt>
 
 This library is free software; you can redistribute it and/or modify
 it under the same terms as Perl itself.  See DISCLAIMER.txt for

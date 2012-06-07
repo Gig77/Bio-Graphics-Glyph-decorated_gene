@@ -8,7 +8,7 @@
 use strict;
 use warnings;
 
-use Test::More tests => 1;
+use Test::More tests => 5;
 BEGIN { 
 	use_ok('Bio::Graphics::Glyph::decorated_transcript'); 
 	use_ok('Bio::Graphics'); 
@@ -23,7 +23,7 @@ BEGIN {
 my $store = Bio::DB::SeqFeature::Store->new
 (
 	-adaptor => 'memory', 
-	-dsn => 'data/decorated_transcript_t1.gff'
+	-dsn => 't/data/decorated_transcript_t1.gff'
 );
 my ($gene_minus) =  $store->features(-name => 'PFA0680c-minus');  	
 my ($gene_plus) =  $store->features(-name => 'PFA0680c-plus');  	
@@ -152,7 +152,7 @@ my ($gene2) =  $store->features(-name => 'test1');
 my $png = $panel->png;
 my $image_map = $panel->create_web_map();
 
-my $imgfile = "data/decorated_transcript_t1.png";
+my $imgfile = "t/data/decorated_transcript_t1.png";
 open(IMG,">$imgfile") or die "could not write to file $imgfile";
 print IMG $png;
 close(IMG);

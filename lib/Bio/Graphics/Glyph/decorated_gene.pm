@@ -259,7 +259,7 @@ L<Bio::Graphics::Glyph::decorated_transcript>
 
 =head1 AUTHOR
 
-Christian Frech E<lt>cfa24@sfu.caE<gt>
+Christian Frech E<lt>frech.christian@gmail.comE<gt>
 
 This library is free software; you can redistribute it and/or modify
 it under the same terms as Perl itself.  See DISCLAIMER.txt for
@@ -267,107 +267,3 @@ disclaimers of warranty.
 
 =cut
 
-#package Bio::Graphics::Glyph::decorated_gene;
-#
-#use strict;
-#use base 'Bio::Graphics::Glyph::decorated_transcript';
-#
-#sub extra_arrow_length {
-#  my $self = shift;
-#  return 0 unless $self->{level} == 1;
-#  local $self->{level} = 0;  # fake out superclass
-#  return $self->SUPER::extra_arrow_length;
-#}
-#
-#sub pad_left {
-#  my $self = shift;
-#  my $type = $self->feature->primary_tag;
-#  return 0 unless $type =~ /gene|mRNA/;
-#  $self->SUPER::pad_left;
-#}
-#
-#sub pad_right {
-#  my $self = shift;
-#  return 0 unless $self->{level} < 2; # don't invoke this expensive call on exons
-#  my $strand = $self->feature->strand;
-#  $strand *= -1 if $self->{flip};
-#  my $pad    = $self->SUPER::pad_right;
-#  return $pad unless defined($strand) && $strand > 0;
-#  my $al = $self->arrow_length;
-#  return $al > $pad ? $al : $pad;
-#}
-#
-#sub pad_bottom {
-#  my $self = shift;
-#  return 0 unless $self->{level} < 2; # don't invoke this expensive call on exons
-#  return $self->SUPER::pad_bottom;
-#}
-#
-#sub pad_top {
-#  my $self = shift;
-#  return 0 unless $self->{level} < 2; # don't invoke this expensive call on exons
-#  return $self->SUPER::pad_top;
-#}
-#
-#sub bump {
-#  my $self = shift;
-#  return 1 if $self->{level} == 0; # top level bumps, other levels don't unless specified in config
-#  return $self->SUPER::bump;
-#}
-#
-#sub label {
-#  my $self = shift;
-#  return unless $self->{level} < 2;
-#  if ($self->label_transcripts && $self->{feature}->primary_tag eq 'mRNA') { # the mRNA
-#    return $self->_label;
-#  } else {
-#    return $self->SUPER::label;
-#  }
-#}
-#
-## 2012-05-10 | CF | bit of a hack, but this allows labeling of transcripts without labeling the gene itself
-## useful for FeatureStack module to save space	
-#sub option
-#{
-#	my $self = shift;
-#
-#	my $option = $_[0];
-#	my $value = $self->SUPER::option(@_);
-#
-#	return 1 if ($option eq 'label' and $self->label_transcripts && $self->{feature}->primary_tag eq 'mRNA');
-#	return $value;
-#}
-#
-#sub label_position {
-#  my $self = shift;
-#  return 'top' if $self->{level} == 0;
-#  return 'left';
-#}
-#
-#sub label_transcripts {
-#  my $self = shift;
-#  return $self->{label_transcripts} if exists $self->{label_transcripts};
-#  return $self->{label_transcripts} = $self->_label_transcripts;
-#}
-#
-#sub _label_transcripts {
-#  my $self = shift;
-#  return $self->option('label_transcripts');
-#}
-#
-#sub draw_connectors {
-#  my $self = shift;
-#  return if $self->feature->primary_tag eq 'gene';
-#  $self->SUPER::draw_connectors(@_);
-#}
-#
-#sub maxdepth {
-#  my $self = shift;
-#  my $md   = $self->Bio::Graphics::Glyph::maxdepth;
-#  return $md if defined $md;
-#  return 2;
-#}
-#
-#
-#
-#1;
