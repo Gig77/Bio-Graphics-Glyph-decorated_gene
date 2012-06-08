@@ -160,7 +160,6 @@ sub new {
 	$self->{'parent'} = undef;
 	$self->{'additional_decorations'} = undef;
 	$self->{'active_decoration'} = undef;
-	$self->{'add_pad_bottom'} = undef;
 
 	# give sub-glyphs access to parent glyph's decorations
 	if ($self->decorations_visible)
@@ -633,7 +632,8 @@ sub decoration_top {
 		$self->throw("$self: stack offset unknown for decoration ".$decoration->name."($decoration)")
 			if (!defined $self->stack_offset_bottom($decoration) and DEBUG);
 		
-		return $self->bottom + $self->stack_offset_bottom($decoration);
+#		return $self->bottom + $self->stack_offset_bottom($decoration);
+		return $self->top+$self->height + $self->stack_offset_bottom($decoration);
 	}
 	elsif ($decoration_position =~ /^[+-]?\d+$/)  # number is interpreted as vertical offset
 	{
@@ -644,7 +644,8 @@ sub decoration_top {
 		$self->throw("invalid decoration_position: $decoration_position")
 			if (($decoration_position ne 'inside') and DEBUG);
 			
-		return int(($self->bottom-$self->pad_bottom+$self->top+$self->pad_top)/2 - $decoration_height/2 + 0.5);		
+#		return int(($self->bottom-$self->pad_bottom+$self->top+$self->pad_top)/2 - $decoration_height/2 + 0.5);		
+		return int(($self->top+$self->height)/2 - $decoration_height/2 + 0.5);		
 	}
 }
 
@@ -661,76 +662,89 @@ sub decoration_bottom {
 	return $self->decoration_top($decoration) + $self->decoration_height($decoration) - 1;	
 }
 
-sub _calc_add_padding
+sub _get_add_padding
 {
  	my $self = shift;
 	
- 	my $height = $self->height;
- 	my ($add_pad_bottom, $add_pad_top) = (0, 0);
-
 	# determine additional top/bottom padding required due to decorations and decoration labels 
+ 	my ($max_pad_bottom, $max_pad_top) = (0, 0);
 	foreach my $decoration (@{$self->mapped_decorations})
 	{
+		# skip invisible decorations
 		next if (!$self->decoration_visible($decoration));
 		
-		my $h_height = $self->decoration_height($decoration);
+		# additional padding = decoration bound - transcript/gene bound
+		my $pad_top = max(0, $self->top - $self->decoration_top($decoration));
+		my $pad_bottom = max(0, $self->decoration_bottom($decoration) - $self->top - $self->height);		
 
-		my ($label_pad_top, $label_pad_bottom) = (0, 0);
+		# additional padding for decoration label?
 		if ($self->decoration_label($decoration))
 		{
-			$label_pad_top = $self->labelfont->height
+			$pad_top += $self->labelfont->height
 				if ($self->decoration_label_position($decoration) eq "above");
-			$label_pad_bottom = $self->labelfont->height
+			$pad_bottom += $self->labelfont->height
 				if ($self->decoration_label_position($decoration) eq "below");			
 		}
-			    
-		if (($h_height - $height)/2 + $label_pad_top > $add_pad_top)
-		{
-			$add_pad_top = ($h_height - $height)/2 + $label_pad_top;
-		}
-		if (($h_height - $height)/2 + $label_pad_bottom > $add_pad_bottom)
-		{
-			$add_pad_bottom = ($h_height - $height)/2 + $label_pad_bottom;
-		}
-		if ($self->{'stack_offset_bottom'}{$decoration} and $self->{'stack_offset_bottom'}{$decoration}+$h_height > $add_pad_bottom)
-		{
-			$add_pad_bottom = $self->{'stack_offset_bottom'}{$decoration}+$h_height;
-		}
+
+		$max_pad_top = max($max_pad_top, $pad_top);
+		$max_pad_bottom = max($max_pad_bottom, $pad_bottom);			    
 	}
-			
-	$self->{'add_pad_bottom'} = $add_pad_bottom;
-	$self->{'add_pad_top'} = $add_pad_top;
+		
+	return ($max_pad_top, $max_pad_bottom);	
 }
 
 # add extra padding if decoration exceeds transcript boundaries and if labeled outside
 sub pad_bottom {
  	my $self = shift;
 
-	my $bottom  = $self->option('pad_bottom');
-	return $bottom if defined $bottom;
-	
-	$self->_calc_add_padding()
-		if (!defined $self->{'add_pad_bottom'});
+	# do not invoke for individual CDS	
+	return 0 
+		if ($self->feature->primary_tag eq "CDS");
 
-	my $pad = $self->Bio::Graphics::Glyph::processed_transcript::pad_bottom;
+	return $self->{'pad_bottom'}
+		if (defined $self->{'pad_bottom'});
 		
-  	return $pad if ($self->{'add_pad_bottom'} < 0);
-  	return $pad + $self->{'add_pad_bottom'};
+	$self->{'pad_bottom'} = $self->option('pad_bottom');
+	if (!defined $self->{'pad_bottom'}) {
+		my ($add_pad_top, $add_pad_bottom) = $self->_get_add_padding();
+		my $pad = $self->Bio::Graphics::Glyph::processed_transcript::pad_bottom;
+			
+	  	if ($add_pad_bottom < 0) {
+	  		$self->{'pad_bottom'} = $pad;
+	  	}
+	  	else {
+	  		$self->{'pad_bottom'} = $pad + $add_pad_bottom;
+	  	}  	
+	}
+	
+  	return $self->{'pad_bottom'};
 }
 
 sub pad_top {
 	my $self = shift;
+
+	# do not invoke for individual CDS	
+	return 0 
+		if ($self->feature->primary_tag eq "CDS");
 	
-	my $top  = $self->option('pad_top');
-	return $top if defined $top;
+	return $self->{'pad_top'}
+		if (defined $self->{'pad_top'});
 
-	$self->_calc_add_padding()
-		if (!defined $self->{'add_pad_top'});
+	$self->{'pad_top'} = $self->option('pad_top');
 
-	my $pad = $self->Bio::Graphics::Glyph::processed_transcript::pad_top;
-		
-  	return $pad if ($self->{'add_pad_top'} < 0);
-  	return $pad + $self->{'add_pad_top'};
+	if (!defined $self->{'pad_top'}) {
+		my ($add_pad_top, $add_pad_bottom) = $self->_get_add_padding();
+		my $pad = $self->Bio::Graphics::Glyph::processed_transcript::pad_top;
+	
+	  	if ($add_pad_top < 0) {
+	  		$self->{'pad_top'} = $pad;
+	  	}
+	  	else {
+	  		$self->{'pad_top'} = $pad + $add_pad_top;
+	  	}
+	}
+  	
+  	return $self->{'pad_top'};		
 }
 
 sub decoration_height {
@@ -1209,8 +1223,7 @@ sub draw_decoration_label {
 		$label_top = $h_top - $font->height - 1;
 	}
 	elsif ( $label_pos and $label_pos eq "below" ) {
-#		$label_top = $h_top + $self->decoration_height($mh) + ($gd->isa("GD::SVG::Image") ? 1 : 0);
-		$label_top = $dy + $self->top + $self->height + ($gd->isa("GD::SVG::Image") ? 1 : 0);
+		$label_top = $dy + max($self->top+$self->height, $self->decoration_bottom($mh)) + ($gd->isa("GD::SVG::Image") ? 1 : 0);
 	}
 
 	my $label_color = $self->decoration_label_color($mh);
