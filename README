@@ -1,16 +1,15 @@
 Bio-Graphics-Glyph-decorated_gene version 0.01
 ==============================================
 
-The README is used to introduce the module and provide instructions on
-how to install the module, any machine dependencies it may have (for
-example C compilers and installed libraries) and any other information
-that should be provided before the module is installed.
-
-A README file is required for CPAN modules since CPAN extracts the
-README file from a module distribution so that people browsing the
-archive can use it get an idea of the modules uses. It is usually a
-good idea to provide version information here so that people can
-decide whether fixes for the module are worth downloading.
+The two glyphs in this package extend the functionality of the Bio::Graphics::Glyph::gene 
+and the Bio::Graphics::Glyph::processed_transcript glyph and allows to draw protein decorations 
+(e.g., signal peptides, transmembrane domains, protein domains) on top of gene models. Currently, 
+the glyph can draw decorations in form of colored or outlined boxes inside or around CDS segments. 
+Protein decorations are specified at the 'mRNA' transcript level in protein coordinates. Protein 
+coordinates are automatically mapped to nucleotide coordinates by the glyph. Decorations are allowed 
+to span exon-exon junctions, in which case decorations are split between exons. By default, the 
+glyph automatically assigns different colors to different types of protein decorations, whereas 
+decorations of the same type are always assigned the same color. 
 
 INSTALLATION
 
@@ -25,8 +24,8 @@ DEPENDENCIES
 
 This module requires these other modules and libraries:
 
-  blah blah blah
-
+  Bio::Graphics
+  
 COPYRIGHT AND LICENCE
 
 Put the correct copyright and licence information here.
