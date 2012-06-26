@@ -5,7 +5,7 @@
 
 # change 'tests => 1' to 'tests => last_test_to_print';
 
-use strict;
+	use strict;
 use warnings;
 
 use Test::More tests => 5;
@@ -31,15 +31,15 @@ my ($gene_plus) =  $store->features(-name => 'PFA0680c-plus');
 #print Dumper($rna1);
 
 # draw panel
-my $panel = Bio::Graphics::Panel->new
-(
-	-length    => $gene_minus->end-$gene_minus->start+102,
+my $panel = Bio::Graphics::Panel->new(
+
+	-length    => $gene_minus->end-$gene_minus->start+202,
 	-offset     => $gene_minus->start-100,
 	-key_style => 'between',
 	-width     => 1024,
 	-pad_left  => 100
 );
-
+  isa_ok($panel,      "Bio::Graphics::Panel",  "Panel");
 # ruler
 $panel->add_track
 (
@@ -49,6 +49,7 @@ $panel->add_track
 	-double => 1,
 	-tick   => 2
 );
+
 
 $panel->add_track
 (
