@@ -118,7 +118,7 @@ is($image_map,$panel->create_web_map(),'image map created');
 	system("rm $html_file") if (-e $html_file);
 		open(HTML, ">$html_file") or Bio::Root::Exception("could not write to file $html_file");
 		print HTML "<html>\n<body>\n";
-		print HTML "<img src=\"decorated_transcript_t7.png\" usemap=\"#map\" />\n";
+		print HTML "<img src=\"imagemaps.png\" usemap=\"#map\" />\n";
 		print HTML "$image_map";
 		print HTML "</body>\n</html>\n";
 		close(HTML);
