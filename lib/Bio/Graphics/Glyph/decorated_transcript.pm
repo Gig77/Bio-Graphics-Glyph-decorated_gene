@@ -284,7 +284,8 @@ sub mapped_decorations {
 
 	if (!defined $self->{'mapped_decorations'})
 	{
-		$self->{'mapped_decorations'} = get_decorations_as_features($feature, $self->additional_decorations);
+		my $cds_tag_name = $self->option('sub_part');
+		$self->{'mapped_decorations'} = get_decorations_as_features($feature, $self->additional_decorations, $cds_tag_name);
 
 		# on first call, init stack offset for stacked decorations
 		foreach my $d (@{$self->{'mapped_decorations'}})
@@ -354,9 +355,10 @@ sub get_decorations_as_features
 {
 	my $feature = shift;
 	my $additional_decorations = shift;  # optional
+	my $cds_tag_name = shift;  # optional; default: "CDS"
 	
 	my @features;
-	my $map = _get_coordinate_map($feature);
+	my $map = _get_coordinate_map($feature, $cds_tag_name);
 	
 	my @decorations = get_feature_decorations($feature);
 	push(@decorations, @$additional_decorations) if ($additional_decorations);
@@ -514,12 +516,13 @@ sub get_decorations_as_features
 # map protein to nucleotide coordinate
 sub _get_coordinate_map {
 	my $feature = shift;
+	my $cds_tag_name = shift || 'CDS';
 	my %map;
 	
  # sort all CDS features by coordinates
  # NOTE: filtering for CDS features by passing feature type to get_SeqFeatures()
  # does not work for some reason, probably when no feature store attached
-	my @cds = grep { $_->primary_tag eq 'CDS' } $feature->get_SeqFeatures();
+	my @cds = grep { $_->primary_tag eq $cds_tag_name } $feature->get_SeqFeatures();
 	if ( $feature->strand > 0 ) {
 		my ( $ppos, $residue ) = ( 1, 0 );
 		my @sorted_cds = sort { $a->start <=> $b->start } (@cds);
@@ -697,9 +700,9 @@ sub _get_add_padding
 sub pad_bottom {
  	my $self = shift;
 
-	# do not invoke for individual CDS	
+	# do not invoke for individual CDS or exon
 	return 0 
-		if ($self->feature->primary_tag eq "CDS");
+		if ($self->feature->primary_tag =~ /(CDS|exon)/);
 
 	return $self->{'pad_bottom'}
 		if (defined $self->{'pad_bottom'});
@@ -725,7 +728,7 @@ sub pad_top {
 
 	# do not invoke for individual CDS	
 	return 0 
-		if ($self->feature->primary_tag eq "CDS");
+		if ($self->feature->primary_tag =~ /(CDS|exon)/);
 	
 	return $self->{'pad_top'}
 		if (defined $self->{'pad_top'});
@@ -1075,7 +1078,8 @@ sub draw_component {
 	}
 
 	# draw decorations on top of gene model
-	if ( $self->{'parent'} and $self->feature->primary_tag eq "CDS") {
+	my $cds_tag_name = $self->option('sub_part') || 'CDS';
+	if ( $self->{'parent'} and $self->feature->primary_tag eq $cds_tag_name) {
 		return $self->draw_decorations_CDS(@_);
 	}
 }
