@@ -30,6 +30,8 @@ can_ok('Bio::DB::SeqFeature::Store', qw(features));
 
 my ($gene_minus) =  $store->features(-name => 'PFA0680c-minus');
 is ($gene_minus->name, 'PFA0680c-minus' , "get features from store");  	
+my ($utr_gene) = $store->features(-name => 'PVX_000640');
+is ($utr_gene->name, 'PVX_000640' , "get features from store");  	
 
 # draw panel
 can_ok('Bio::Graphics::Panel', qw(offset key_style width pad_left add_track));
@@ -108,6 +110,20 @@ ok(1, 'track3 added');
 
 $panel->add_track
 (
+	$utr_gene,
+	-glyph => 'decorated_gene',
+	-label => sub{"genelabel should not overlap"},
+	-description => sub { "labels above decoration; should not overlap with this description"},
+	-decoration_visible => 1,	
+	-height => 12,
+	-decoration_color		=> 'red',
+	-decoration_label_position => 'above',
+	-decoration_label_color => 'black',
+);
+ok(1, 'track4 added');
+
+$panel->add_track
+(
 	$gene_minus,
 	-glyph => 'decorated_gene',
 	-label => sub{"genelabel should not overlap"},
@@ -118,7 +134,7 @@ $panel->add_track
 	-decoration_label_position => 'above',
 	-decoration_label_color => 'black',
 );
-ok(1, 'track4 added');
+ok(1, 'track5 added');
 
 $panel->add_track
 (
@@ -137,7 +153,7 @@ $panel->add_track
 	},
 	-decoration_label_color => 'black',
 );
-ok(1, 'track4 added');
+ok(1, 'track6 added');
 };
 # write image
 my $png = $panel->png;
