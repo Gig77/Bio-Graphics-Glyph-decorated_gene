@@ -666,8 +666,9 @@ sub decoration_top {
 		$self->throw("invalid decoration_position: $decoration_position")
 			if (($decoration_position ne 'inside') and DEBUG);
 			
-#		return int(($self->bottom-$self->pad_bottom+$self->top+$self->pad_top)/2 - $decoration_height/2 + 0.5);		
-		return int(($self->top+$self->height)/2 - $decoration_height/2 + 0.5);		
+#		return int(($self->bottom-$self->pad_bottom+$self->top+$self->pad_top)/2 - $decoration_height/2 + 0.5);
+#		print "top: ".$self->top." height: ".$self->height." decoration_height: ".$decoration_height." result: ".int(($self->top+$self->height)/2 - $decoration_height/2 + 0.5)."\n";		
+		return int($self->top+$self->height/2 - $decoration_height/2 + 0.5);		
 	}
 }
 
