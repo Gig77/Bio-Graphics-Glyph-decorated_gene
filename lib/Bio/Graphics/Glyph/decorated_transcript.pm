@@ -20,8 +20,8 @@ use base
 sub my_descripton {
   return <<END;
 This glyph extends the functionality of the Bio::Graphics::Glyph::processed_transcript glyph 
-and allows to draw protein decorations (e.g., signal peptides, transmembrane domains, protein domains)
-on top of gene models. Currently, the glyph can draw decorations in form of colored or outlined boxes 
+and allows protein decorations (e.g., signal peptides, transmembrane domains, protein domains)
+to be drawn on top of gene models. Currently, the glyph can draw decorations in form of colored or outlined boxes 
 inside or around CDS segments. Protein decorations are specified at the 'mRNA' transcript level 
 in protein coordinates. Protein coordinates are automatically mapped to nucleotide coordinates by the glyph. 
 Decorations are allowed to span exon-exon junctions, in which case decorations are split between exons. 
@@ -48,8 +48,8 @@ Each protein decoration consists of six fields separated by a colon:
    like ':' or ',' that might interfere with the GFF tag parser should be avoided. 
 
 If callback functions are used as glyph parameters (see below), the callback is called for each
-decoration separately. That is, the callback can be called multiple times for the same CDS feature,
-but each time with a different decoration. The currently drawn (active) decoration is made available 
+decoration separately. That is, the callback can get called multiple times for the same CDS feature,
+but each time with a different active decoration. The currently drawn (active) decoration is made available 
 to the callback via the glyph method 'active_decoration'. The active decoration is returned in form
 of a Bio::Graphics::Feature object, with decoration data fields mapped to corresponding feature
 attributes in the following way:
@@ -95,7 +95,7 @@ sub my_options {
 	decoration_border_color => [
 	    'color',
 	    'black',
-	    'Color of decoration boder.'],
+	    'Color of decoration border.'],
 	decoration_label => [
 	    'string',
 	    undef,
@@ -105,7 +105,7 @@ sub my_options {
 	    'does not occur for SVG output.'],
 	decoration_label_position => [
 	    ['inside', 'above', 'below'],
-	    undef,
+	    'inside',
 	    'Position of decoration label. Labels can be drawn \'inside\' decorations (default)',
 	    'or \'above\' and \'below\' decorations.'],
 	decoration_label_color => [
@@ -118,11 +118,15 @@ sub my_options {
 	additional_decorations => [
 	    'string',
 	    undef,
-	    'Additional decorations to those specified in the GFF file. Expected is a string',
-	    'in the same format as described above for GFF files. This parameter is intended',
+	    'Additional decorations to those specified in the GFF file. Expected is a',
+	    'comma-separated string in the same format as described above for GFF files.',
+	    'Example string: "SignalP40:SP:1:23:0:my_comment,TMHMM:TM:187:209:0"',
+	    'This parameter is intended',
 	    'to be used as callback function, which inspects the currently processed transcript',
 	    'feature (first parameter to callback) and returns additional protein decorations',
-	    'that should be drawn.'],
+	    'that should be drawn. Alternatively, decorations not specified in the GFF file can', 
+	    'also be added dynamically to feature objects before rendering using the',
+	    'add_tag_value() method of the feature object.'],
 	decoration_height => [
 	    'integer',
 	    undef,
@@ -130,9 +134,24 @@ sub my_options {
 	    'height of the underlying transcript glyph minus 2, such that the decoration is drawn',
 	    'within transcript boundaries.'],
 	decoration_position => [
-	    ['inside'],
+	    ['inside', 'stacked_bottom', '<integer value>'],
 	    'inside',
-	    'Currently, decorations can only be drawn inside CDS segments.'],
+	    'Vertical position of the decoration. If \'inside\' is specified',
+        '(default), decorations are drawn inside CDS segments.', 
+        'Alternatively, a positive or negative integer value can be',
+        'specified, which will vertically offset the decoration by',
+        'the specified amount (in pixels) relative to the CDS segment.',
+        'Specifying \'stacked_bottom\' will stack decorations below',
+        'CDS segments in a non-overlapping manner (experimental).'],
+	decoration_position => [
+	    ['CDS', 'mRNA'],
+	    'CDS',
+        'Feature level at which decoration is drawn (\'CDS\' or \'mRNA\').',
+        'By default, decorations are drawn at the \'CDS\'',
+        'level, which means the decoration is only visible where it',
+        'overlaps with a coding sequence, skipping introns.',
+        'Under some circumstances decorations should span introns,',
+        'which can be achieved by specifying \'mRNA\' here.'],
 	box_subparts => [
 	    'integer',
 	    '0',
@@ -284,7 +303,8 @@ sub mapped_decorations {
 
 	if (!defined $self->{'mapped_decorations'})
 	{
-		$self->{'mapped_decorations'} = get_decorations_as_features($feature, $self->additional_decorations);
+		my $cds_tag_name = $self->option('sub_part');
+		$self->{'mapped_decorations'} = get_decorations_as_features($feature, $self->additional_decorations, $cds_tag_name);
 
 		# on first call, init stack offset for stacked decorations
 		foreach my $d (@{$self->{'mapped_decorations'}})
@@ -354,9 +374,10 @@ sub get_decorations_as_features
 {
 	my $feature = shift;
 	my $additional_decorations = shift;  # optional
+	my $cds_tag_name = shift;  # optional; default: "CDS"
 	
 	my @features;
-	my $map = _get_coordinate_map($feature);
+	my $map = _get_coordinate_map($feature, $cds_tag_name);
 	
 	my @decorations = get_feature_decorations($feature);
 	push(@decorations, @$additional_decorations) if ($additional_decorations);
@@ -514,12 +535,13 @@ sub get_decorations_as_features
 # map protein to nucleotide coordinate
 sub _get_coordinate_map {
 	my $feature = shift;
+	my $cds_tag_name = shift || 'CDS';
 	my %map;
 	
  # sort all CDS features by coordinates
  # NOTE: filtering for CDS features by passing feature type to get_SeqFeatures()
  # does not work for some reason, probably when no feature store attached
-	my @cds = grep { $_->primary_tag eq 'CDS' } $feature->get_SeqFeatures();
+	my @cds = grep { $_->primary_tag eq $cds_tag_name } $feature->get_SeqFeatures();
 	if ( $feature->strand > 0 ) {
 		my ( $ppos, $residue ) = ( 1, 0 );
 		my @sorted_cds = sort { $a->start <=> $b->start } (@cds);
@@ -644,8 +666,9 @@ sub decoration_top {
 		$self->throw("invalid decoration_position: $decoration_position")
 			if (($decoration_position ne 'inside') and DEBUG);
 			
-#		return int(($self->bottom-$self->pad_bottom+$self->top+$self->pad_top)/2 - $decoration_height/2 + 0.5);		
-		return int(($self->top+$self->height)/2 - $decoration_height/2 + 0.5);		
+#		return int(($self->bottom-$self->pad_bottom+$self->top+$self->pad_top)/2 - $decoration_height/2 + 0.5);
+#		print "top: ".$self->top." height: ".$self->height." decoration_height: ".$decoration_height." result: ".int(($self->top+$self->height)/2 - $decoration_height/2 + 0.5)."\n";		
+		return int($self->top+$self->height/2 - $decoration_height/2 + 0.5);		
 	}
 }
 
@@ -697,9 +720,9 @@ sub _get_add_padding
 sub pad_bottom {
  	my $self = shift;
 
-	# do not invoke for individual CDS	
+	# do not invoke for individual CDS or exon
 	return 0 
-		if ($self->feature->primary_tag eq "CDS");
+		if ($self->feature->primary_tag =~ /(CDS|exon|UTR)/i);
 
 	return $self->{'pad_bottom'}
 		if (defined $self->{'pad_bottom'});
@@ -725,7 +748,7 @@ sub pad_top {
 
 	# do not invoke for individual CDS	
 	return 0 
-		if ($self->feature->primary_tag eq "CDS");
+		if ($self->feature->primary_tag =~ /(CDS|exon|UTR)/i);
 	
 	return $self->{'pad_top'}
 		if (defined $self->{'pad_top'});
@@ -891,7 +914,7 @@ sub decoration_border {
 	
 	return 0 if (!$decoration_border or $decoration_border eq 'none');
 	
-	return 1;
+	return $decoration_border;
 }
 
 sub decoration_level {
@@ -1024,9 +1047,6 @@ sub boxes {
 
 	push(@boxes, $self->Bio::Graphics::Glyph::processed_transcript::boxes(@_));
 	
-#	return $self->Bio::Graphics::Glyph::processed_transcript::boxes(@_) 
-#		if (!$self->option('decoration_image_map'));
-
 	return wantarray ? @boxes : \@boxes;
 }
 
@@ -1075,7 +1095,8 @@ sub draw_component {
 	}
 
 	# draw decorations on top of gene model
-	if ( $self->{'parent'} and $self->feature->primary_tag eq "CDS") {
+	my $cds_tag_name = $self->option('sub_part') || 'CDS';
+	if ( $self->{'parent'} and $self->feature->primary_tag eq $cds_tag_name) {
 		return $self->draw_decorations_CDS(@_);
 	}
 }
@@ -1159,15 +1180,16 @@ sub draw_decoration {
 			$self->factory->translate_color($color) );				
 	}
 
-	if ($self->decoration_border($mh))
+	my $border_style = $self->decoration_border($mh);
+	if ($border_style)
 	{
 		my ($b_left, $b_top, $b_right, $b_bottom) = ($h_left, $h_top, $h_right, $h_bottom);
 		my $border_color = $self->factory->translate_color($self->decoration_border_color($mh));
 
-		warn "border rectangle: left=$b_left,top=$b_top,right=$b_right,bottom=$b_bottom\n"
+		warn "border rectangle ($border_style): left=$b_left,top=$b_top,right=$b_right,bottom=$b_bottom\n"
 			if (DEBUG == 2);
 
-		if ($self->decoration_border($mh) eq "dashed")
+		if ($border_style eq "dashed")
 		{
 			my $image_class   = $self->panel->image_class;
 			my $gdTransparent = $image_class->gdTransparent;
@@ -1252,8 +1274,8 @@ Bio::Graphics::Glyph::decorated_transcript - draws processed transcript with pro
 =head1 DESCRIPTION
 
 This glyph extends the functionality of the L<Bio::Graphics::Glyph::processed_transcript> glyph 
-and allows to draw protein decorations (e.g., signal peptides, transmembrane domains, protein domains)
-on top of gene models. Currently, the glyph can draw decorations in form of colored or outlined boxes 
+and allows protein decorations (e.g., signal peptides, transmembrane domains, protein domains)
+to be drawn on top of gene models. Currently, the glyph can draw decorations in form of colored or outlined boxes 
 inside or around CDS segments. Protein decorations are specified at the 'mRNA' transcript level 
 in protein coordinates. Protein coordinates are automatically mapped to nucleotide coordinates by the glyph. 
 Decorations are allowed to span exon-exon junctions, in which case decorations are split between exons. 
@@ -1302,11 +1324,11 @@ like ':' or ',' that might interfere with the GFF tag parser should be avoided.
 =back 
 
 If callback functions are used as glyph parameters (see below), the callback is called for each
-decoration separately. That is, the callback can be called multiple times for a given CDS feature,
-but each time with a different decoration that overlaps with this CDS. The currently drawn (active) 
-decoration is made available to the callback via the glyph method 'active_decoration'. The active 
-decoration is returned in form of a Bio::Graphics::Feature object, with decoration data fields 
-mapped to corresponding feature attributes in the following way:
+decoration separately. That is, the callback can get called multiple times for the same CDS feature,
+but each time with a different active decoration. The currently drawn (active) decoration is made available 
+to the callback via the glyph method 'active_decoration'. The active decoration is returned in form
+of a Bio::Graphics::Feature object, with decoration data fields mapped to corresponding feature
+attributes in the following way:
 
 =over
 
@@ -1385,7 +1407,7 @@ In addition, it recognizes the following glyph-specific options:
                   'inside' decorations (default) or 'above' and 'below'
                   decorations.
                   
-  -decoration_label_color
+  -decoration_label_color                                                  <auto>
   
                   Decoration label color. If not specified, this color 
                   is complementary to decoration_color (e.g., yellow text 
@@ -1396,14 +1418,19 @@ In addition, it recognizes the following glyph-specific options:
 
   -additional_decorations                                                  undefined
    
-                  Additional decorations to those specified in the GFF 
-                  file. Expected is a string in the same format as 
-                  described above for GFF files. 
-                  This parameter is intended to be used as callback 
-                  function, which inspects the currently processed
-                  transcript feature (first parameter to callback) 
-                  and returns additional protein decorations that 
-                  should be drawn.
+	              Additional decorations to those specified in the GFF file. 
+	              Expected is a comma-separated string in the same format as 
+	              described above for GFF files, for example
+	              
+	                "SignalP40:SP:1:23:0:my_comment,TMHMM:TM:187:209:0"
+	              
+	              This parameter is intended to be used as callback function,  
+	              which inspects the currently processed transcript feature
+	              (first parameter to callback) and returns additional protein
+	              decorations that should be drawn. Alternatively, decorations 
+	              not specified in the GFF file can also be added dynamically to 
+	              feature objects before rendering using the add_tag_value()
+	              method of the feature object. 
 
   -decoration_height                                                       CDS height-2
                   
@@ -1414,9 +1441,23 @@ In addition, it recognizes the following glyph-specific options:
 
   -decoration_position                                                     inside
   
-                  Currently decorations can only be drawn inside 
-                  CDS segments.
+                  Vertical position of the decoration. If 'inside' is specified
+                  (default), decorations are drawn inside CDS segments. 
+                  Alternatively, a positive or negative integer value can be
+                  specified, which will vertically offset the decoration by
+                  the specified amount (in pixels) relative to the CDS segment.
+                  Specifying 'stacked_bottom' will stack decorations below 
+                  CDS segments in a non-overlapping manner (experimental).
                             
+  -decoration_level                                                        CDS
+  
+                  Feature level at which decoration is drawn ('CDS' or 'mRNA'). 
+                  By default, decorations are drawn at the 'CDS'
+                  level, which means the decoration is only visible where it
+                  overlaps with a coding sequence, skipping introns. 
+                  Under some circumstances decorations should span introns, 
+                  which can be achieved by specifying 'mRNA' here.
+                  
   -box_subparts                                                            0 
                   
                   Same functionality as for basic glyph. Enables mouse-over

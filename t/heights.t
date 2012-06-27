@@ -30,6 +30,8 @@ can_ok('Bio::DB::SeqFeature::Store', qw(features));
 
 my ($gene_minus) =  $store->features(-name => 'PFA0680c-minus');
 is ($gene_minus->name, 'PFA0680c-minus' , "get features from store");  	
+my ($utr_gene) = $store->features(-name => 'PVX_000640');
+is ($utr_gene->name, 'PVX_000640' , "get features from store");  	
 
 # draw panel
 can_ok('Bio::Graphics::Panel', qw(offset key_style width pad_left add_track));
@@ -101,6 +103,17 @@ $panel->add_track
 );
 ok(1, 'track3 added');
 
+$panel->add_track
+(
+	$utr_gene,
+	-glyph => 'decorated_gene',
+	-decoration_visible => 1,	
+	-height => 12,
+	-decoration_color		=> 'black',
+	-decoration_height   => 24
+);
+ok(1, 'track4 added');
+
 #can be used with transparent boxes to show highlights
 $panel->add_track
 (
@@ -113,7 +126,7 @@ $panel->add_track
 	-decoration_border_color => 'red',
 	-decoration_height   => 24
 );
-ok(1, 'track4 added');
+ok(1, 'track5 added');
 
 $panel->add_track
 (
@@ -129,7 +142,7 @@ $panel->add_track
 			return '10';
 	},
 );
-ok(1, 'track5 added');
+ok(1, 'track6 added');
 };
 # write image
 my $png = $panel->png;
