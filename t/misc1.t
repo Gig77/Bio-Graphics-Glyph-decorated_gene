@@ -5,10 +5,10 @@
 
 # change 'tests => 1' to 'tests => last_test_to_print';
 
-	use strict;
+use strict;
 use warnings;
 
-use Test::More tests => 5;
+use Test::More tests => 8;
 BEGIN { 
 	use_ok('Bio::Graphics::Glyph::decorated_transcript'); 
 	use_ok('Bio::Graphics'); 
@@ -149,16 +149,15 @@ my ($gene2) =  $store->features(-name => 'test1');
 	);	
 }
 
-# write image
+# png output
 my $png = $panel->png;
-my $image_map = $panel->create_web_map();
 
-my $imgfile = "t/data/decorated_transcript_t1.png";
+my $imgfile = "t/data/misc1.png";
+system("rm $imgfile") if (-e $imgfile);
 open(IMG,">$imgfile") or die "could not write to file $imgfile";
 print IMG $png;
 close(IMG);
-
-print "$image_map\n";
-
-print "Image written to $imgfile\n";
+ok(-e $imgfile, 'imgfile created');
+my $filesize = -s $imgfile;
+isnt($filesize,0, 'check nonzero filesize');
 
