@@ -702,7 +702,7 @@ sub pad_bottom {
 
 	# do not invoke for individual CDS or exon
 	return 0 
-		if ($self->feature->primary_tag =~ /(CDS|exon)/);
+		if ($self->feature->primary_tag =~ /(CDS|exon|UTR)/i);
 
 	return $self->{'pad_bottom'}
 		if (defined $self->{'pad_bottom'});
@@ -728,7 +728,7 @@ sub pad_top {
 
 	# do not invoke for individual CDS	
 	return 0 
-		if ($self->feature->primary_tag =~ /(CDS|exon)/);
+		if ($self->feature->primary_tag =~ /(CDS|exon|UTR)/i);
 	
 	return $self->{'pad_top'}
 		if (defined $self->{'pad_top'});
@@ -894,7 +894,7 @@ sub decoration_border {
 	
 	return 0 if (!$decoration_border or $decoration_border eq 'none');
 	
-	return 1;
+	return $decoration_border;
 }
 
 sub decoration_level {
@@ -1163,15 +1163,16 @@ sub draw_decoration {
 			$self->factory->translate_color($color) );				
 	}
 
-	if ($self->decoration_border($mh))
+	my $border_style = $self->decoration_border($mh);
+	if ($border_style)
 	{
 		my ($b_left, $b_top, $b_right, $b_bottom) = ($h_left, $h_top, $h_right, $h_bottom);
 		my $border_color = $self->factory->translate_color($self->decoration_border_color($mh));
 
-		warn "border rectangle: left=$b_left,top=$b_top,right=$b_right,bottom=$b_bottom\n"
-			if (DEBUG == 2);
+		warn "border rectangle ($border_style): left=$b_left,top=$b_top,right=$b_right,bottom=$b_bottom\n"
+			if (DEBUG == 0);
 
-		if ($self->decoration_border($mh) eq "dashed")
+		if ($border_style eq "dashed")
 		{
 			my $image_class   = $self->panel->image_class;
 			my $gdTransparent = $image_class->gdTransparent;
