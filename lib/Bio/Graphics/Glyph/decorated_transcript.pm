@@ -1170,7 +1170,7 @@ sub draw_decoration {
 		my $border_color = $self->factory->translate_color($self->decoration_border_color($mh));
 
 		warn "border rectangle ($border_style): left=$b_left,top=$b_top,right=$b_right,bottom=$b_bottom\n"
-			if (DEBUG == 0);
+			if (DEBUG == 2);
 
 		if ($border_style eq "dashed")
 		{
