@@ -102,7 +102,7 @@ $panel->add_track
 	-height => 12,
 	-decoration_color		=> 'yellow'
 );
-ok(1,'track2 added');
+ok(1,'track3 added');
 
 };
 # write image

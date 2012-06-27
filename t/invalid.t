@@ -64,7 +64,7 @@ $panel->add_track
 	-decoration_label_color => 'black',
 	-description => 1
 );
-ok(1, 'track2 added');
+ok(1, 'track1 added');
 
 $panel->add_track
 (
@@ -92,7 +92,7 @@ $panel->add_track
 	-decoration_label_color => 'black',
 	-description => 1
 );
-ok(1, 'track2 added');
+ok(1, 'track3 added');
 
 
 # write image

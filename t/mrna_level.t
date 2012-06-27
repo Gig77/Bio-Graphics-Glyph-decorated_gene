@@ -77,7 +77,9 @@ $panel->add_track
 	-decoration_color		=> 'yellow',
 	-decoration_level        => 'mRNA'
 );
-ok(1,'track1 added');$panel->add_track
+ok(1,'track1 added');
+
+$panel->add_track
 (
 	$gene_minus,
 	-description => sub { "decoration_level = 'mRNA' as callback"},
@@ -92,7 +94,7 @@ ok(1,'track1 added');$panel->add_track
 			return '';
 	},
 );
-ok(1,'track1 added');
+ok(1,'track2 added');
 };
 
 # write image

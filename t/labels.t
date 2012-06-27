@@ -137,7 +137,7 @@ $panel->add_track
 	},
 	-decoration_label_color => 'black',
 );
-ok(1, 'track4 added');
+ok(1, 'track5 added');
 };
 # write image
 my $png = $panel->png;

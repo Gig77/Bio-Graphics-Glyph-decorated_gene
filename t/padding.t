@@ -46,7 +46,7 @@ my @args2 = (	-length    => $gene_minus->end-$gene_minus->start+102,
 	-pad_left  => 100,
 	-image_class=>'GD::SVG');
 my $panel2 = new_ok('Bio::Graphics::Panel' => \@args2);
-# ruler
+
 
 can_ok($panel, qw(add_track));
 can_ok($panel2, qw(add_track));
@@ -57,6 +57,7 @@ add_tracks($panel2);
 sub add_tracks{
 my $panel = shift;
 
+# ruler
 $panel->add_track(
 	Bio::Graphics::Feature->new(-start => $gene_minus->start-100, -end => $gene_minus->end),
 	-glyph  => 'arrow',
@@ -104,7 +105,7 @@ $panel->add_track
 	-decoration_color	=> 'yellow'
 	
 );
-ok(1,'track2 added');
+ok(1,'track3 added');
 
 };
 # write image

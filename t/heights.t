@@ -129,7 +129,7 @@ $panel->add_track
 			return '10';
 	},
 );
-ok(1, 'track3 added');
+ok(1, 'track5 added');
 };
 # write image
 my $png = $panel->png;
