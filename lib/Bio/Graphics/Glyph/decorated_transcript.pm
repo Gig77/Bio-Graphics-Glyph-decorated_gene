@@ -211,16 +211,6 @@ sub parent {
 	return $self->{'parent'};
 }
 
-#sub decorations {
-#	my $self    = shift;
-#	my $feature = $self->feature;
-#
-#	return $self->{'parent'}->decorations(@_)
-#		if ($self->{'parent'} and $feature->primary_tag ne "mRNA");
-#
-#	return $feature->get_tag_values(DECORATION_TAG_NAME);
-#}
-
 sub get_feature_decorations {
 	my $feature = shift;
 
@@ -249,29 +239,6 @@ sub additional_decorations {
 	
 	return \@additional_decorations;
 }
-
-#sub all_decorations {
-#	my $self = shift;
-#
-#	my @all_decorations;
-#	
-#	# no decorations at gene level
-#	return \@all_decorations
-#		if ($self->feature->primary_tag eq "gene");
-#		
-#	# forward request to mRNA parent glyph; 
-#	# allows CDS child glyphs to retrieve decoration information from mRNA
-#	return $self->{'parent'}->all_decorations(@_)
-#		if ($self->{'parent'} and $self->feature->primary_tag ne "mRNA");
-#
-#	# decoration data specified as feature tag
-#	@all_decorations = $self->decorations;
-#	
-#	# add additional decorations provided via callback
-#	push(@all_decorations, @{$self->additional_decorations});
-#
-#	return \@all_decorations;
-#}
 
 # returns stack offset of decoration (only used if decoration is drawn stacked)
 sub stack_offset_bottom {
@@ -434,102 +401,6 @@ sub get_decorations_as_features
 	return wantarray ? @features : \@features; 
 }
 
-#sub _map_decorations {
-#	my $self    = shift;
-#	my $feature = $self->feature;
-#	
-#	$self->_map_coordinates();
-#
-#	my @mapped_decorations;
-#	foreach my $h ( @{$self->all_decorations} ) {
-#		my ( $type, $name, $p_start, $p_end, $score, $desc ) = split( ":", $h );
-#
-#		if (!defined $p_end)
-#		{
-#			warn "_map_decorations(): WARNING: invalid decoration data for feature $feature: '$h'\n";
-#			next;
-#		}
-#
-#		my $nt_start = $self->_map_codon_start($p_start);
-#		if (!$nt_start)
-#		{
-#			warn "DECORATION=$h\n";
-#			warn "_map_decorations(): WARNING: could not map decoration start coordinate on feature $feature(".$feature->primary_tag.")\n";
-#			next;
-#		}
-#		my $nt_end = $self->_map_codon_end($p_end);
-#		if (!$nt_end)
-#		{
-#			warn "DECORATION=$h\n";
-#			warn "_map_decorations(): WARNING: could not map decoration end coordinate on feature $feature(".$feature->primary_tag.")\n";
-#			next;
-#		}
-#
-#		( $nt_start, $nt_end ) = ( $nt_end, $nt_start )
-#		  if ( $nt_start > $nt_end );
-#
-#		my $f = Bio::Graphics::Feature->new
-#		(
-#			-type => $type,
-#			-name => $name,
-#			-display_name => $name,
-#			-start => $nt_start,
-# 			-end => $nt_end,
-#			-score => $score,
-#			-desc => $desc,
-#			-seq_id => $feature->seq_id,
-#			-strand => $feature->strand,
-#			-attributes => {   # remember protein coordinates for callbacks  
-#				'p_start' => $p_start, 
-#				'p_end' => $p_end 
-#			}
-#		);
-#		
-##		my $mapped_decoration = "$h:$nt_start:$nt_end";
-#		push( @mapped_decorations, $f );
-#		
-#		# init stack offset for stacked decorations
-#		if ($self->decoration_position($f) eq 'stacked_bottom')
-#		{			
-#			if (!defined $self->{'stack_offset_bottom'}{$f})
-#			{				
-#				$self->{'cur_stack_offset_bottom'} = 2 
-#					if (!defined $self->{'cur_stack_offset_bottom'});
-#					
-#				$self->{'stack_offset_bottom'}{$f} = $self->{'cur_stack_offset_bottom'};
-#				$self->{'cur_stack_offset_bottom'} += $self->decoration_height($f);
-#
-#				warn "$self: stack offset ".$f->name."($f): ".$self->{'stack_offset_bottom'}{$f}."\n"
-#					if (DEBUG);
-#			}
-#		}
-#		
-#		warn "DECORATION=$h --> $nt_start:$nt_end\n" if (DEBUG);
-#	}
-#
-#	$self->{'mapped_decorations'} = \@mapped_decorations;
-#}
-
-#sub _map_codon_start {
-#	my $self               = shift;
-#	my $protein_coordinate = shift;
-#	
-#	$self->throw('protein coordinate not specified: ')
-#		if (!$protein_coordinate and DEBUG);
-#
-#	return $self->{'p2n'}->{$protein_coordinate}->{'codon_start'};
-#}
-#
-#sub _map_codon_end {
-#	my $self               = shift;
-#	my $protein_coordinate = shift;
-#	
-#	$self->throw('protein coordinate not specified')
-#		if (!$protein_coordinate and DEBUG);
-#
-#	return $self->{'p2n'}->{$protein_coordinate}->{'codon_end'};
-#}
-
 # map protein to nucleotide coordinate
 sub _get_coordinate_map {
 	my $feature = shift;
@@ -582,57 +453,6 @@ sub _get_coordinate_map {
 	
 	return \%map;
 }
-
-
-## map protein to nucleotide coordinate
-#sub _map_coordinates {
-#	my $self = shift;
-#
-# # sort all CDS features by coordinates
-# # NOTE: filtering for CDS features by passing feature type to get_SeqFeatures()
-# # does not work for some reason, probably when no feature store attached
-#	my @cds =
-#	  grep { $_->primary_tag eq 'CDS' } $self->feature->get_SeqFeatures();
-#	if ( $self->feature->strand > 0 ) {
-#		my ( $ppos, $residue ) = ( 1, 0 );
-#		my @sorted_cds = sort { $a->start <=> $b->start } (@cds);
-#		foreach my $c (@sorted_cds) {
-#			$self->{'p2n'}{ $ppos - 1 }{'codon_end'} = $c->start + $residue - 1
-#			  if ($residue);
-#			for (
-#				my $ntpos = $c->start + $residue ;
-#				$ntpos <= $c->end ;
-#				$ntpos += 3
-#			  )
-#			{
-#				$self->{'p2n'}{$ppos}{'codon_start'} = $ntpos;
-#				$self->{'p2n'}{$ppos}{'codon_end'}   = $ntpos + 2;
-#				$ppos++;
-#				$residue = $ntpos + 2 - $c->end;
-#			}
-#		}
-#	}
-#	else {
-#		my ( $ppos, $residue ) = ( 1, 0 );
-#		my @sorted_cds = reverse sort { $a->start <=> $b->start } (@cds);
-#		foreach my $c (@sorted_cds) {
-#			$self->{'p2n'}{ $ppos - 1 }{'codon_end'} = $c->end - $residue + 1
-#			  if ($residue);
-#			for (
-#				my $ntpos = $c->end - $residue ;
-#				$ntpos >= $c->start ;
-#				$ntpos -= 3
-#			  )
-#			{
-#				$self->{'p2n'}{$ppos}{'codon_start'} = $ntpos;
-#				$self->{'p2n'}{$ppos}{'codon_end'}   = $ntpos - 2;
-##				print $self->feature->name."\t$ppos\t".$self->{'p2n'}{$ppos}{'codon_start'}."\t".$self->{'p2n'}{$ppos}{'codon_end'}."\n" if ($self->feature->name eq "DAF19-b");
-#				$ppos++;
-#				$residue = $c->start - ( $ntpos - 2 );
-#			}
-#		}
-#	}
-#}
 
 sub decoration_top {
 	my $self = shift;
@@ -803,12 +623,6 @@ sub decoration_position {
 	$decoration_position = 'inside'
 	  if ( !$decoration_position );
 
-#	if ($decoration_position ne 'inside' and $decoration_position ne 'stacked_bottom')
-#	{
-#		$self->throw('invalid decoration_position: '.$decoration_position) if (DEBUG);
-#		$decoration_position = 'inside';
-#	}
-	
 	return $decoration_position;
 }
 
