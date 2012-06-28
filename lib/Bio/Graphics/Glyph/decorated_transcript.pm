@@ -389,22 +389,20 @@ sub get_decorations_as_features
 
 		if (!defined $p_end)
 		{
-			warn "get_decorations_as_features(): WARNING: invalid decoration data for feature $feature: '$decoration'\n";
+			warn "get_decorations_as_features(): WARNING: invalid decoration data for feature $feature(".$feature->primary_tag."):\n$decoration\n";
 			next;
 		}
 
 		my $nt_start =$map->{$p_start}->{'codon_start'};
 		if (!$nt_start)
 		{
-			warn "DECORATION=$decoration\n";
-			warn "get_decorations_as_features(): WARNING: could not map decoration start coordinate on feature $feature(".$feature->primary_tag.")\n";
+			warn "get_decorations_as_features(): WARNING: could not map decoration start coordinate on feature $feature(".$feature->primary_tag."):\n$decoration\n";
 			next;
 		}
 		my $nt_end = $map->{$p_end}->{'codon_end'};
 		if (!$nt_end)
 		{
-			warn "DECORATION=$decoration\n";
-			warn "get_decorations_as_features(): WARNING: could not map decoration end coordinate on feature $feature(".$feature->primary_tag.")\n";
+			warn "get_decorations_as_features(): WARNING: could not map decoration end coordinate on feature $feature(".$feature->primary_tag."):\n$decoration\n";
 			next;
 		}
 
