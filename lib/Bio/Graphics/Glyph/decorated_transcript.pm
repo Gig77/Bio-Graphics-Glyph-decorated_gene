@@ -1415,20 +1415,20 @@ In addition, it recognizes the following glyph-specific options:
                   of the underlying transcript glyph is used as default.
 
   -additional_decorations                                                  undefined
-   
-	              Additional decorations to those specified in the GFF file. 
-	              Expected is a comma-separated string in the same format as 
-	              described above for GFF files, for example
-	              
-	                "SignalP40:SP:1:23:0:my_comment,TMHMM:TM:187:209:0"
-	              
-	              This parameter is intended to be used as callback function,  
-	              which inspects the currently processed transcript feature
-	              (first parameter to callback) and returns additional protein
-	              decorations that should be drawn. Alternatively, decorations 
-	              not specified in the GFF file can also be added dynamically to 
-	              feature objects before rendering using the add_tag_value()
-	              method of the feature object. 
+  
+                  Additional decorations to those specified in the GFF file. 
+                  Expected is a comma-separated string in the same format as 
+                  described above for GFF files, for example
+             
+                    "SignalP40:SP:1:23:0:my_comment,TMHMM:TM:187:209:0"
+              
+                  This parameter is intended to be used as callback function,  
+                  which inspects the currently processed transcript feature
+                  (first parameter to callback) and returns additional protein
+                  decorations that should be drawn. Alternatively, decorations 
+                  not specified in the GFF file can also be added dynamically to 
+                  feature objects before rendering using the add_tag_value()
+                  method of the feature object. 
 
   -decoration_height                                                       CDS height-2
                   
