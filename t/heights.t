@@ -7,7 +7,7 @@
 use strict;
 use warnings;
 
-use Test::More tests => 32;
+use Test::More tests => 35;
 BEGIN { 
 	use_ok('Bio::Graphics::Glyph::decorated_transcript'); 
 	use_ok('Bio::Graphics'); 
