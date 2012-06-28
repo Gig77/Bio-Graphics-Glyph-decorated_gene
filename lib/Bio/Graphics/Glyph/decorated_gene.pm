@@ -8,16 +8,16 @@ $VERSION = '0.01';
 
 sub my_descripton {
     return <<END;
-This glyph has the same functionality as the Bio::Graphics::Glyph::gene glyph, but uses
-the Bio::Graphics::Glyph::decorated_transcript glyph instead of the 
-Bio::Graphics::Glyph::processed_transcript glyph to draw transcripts. 
+This glyph has the same functionality as Bio::Graphics::Glyph::gene, but uses
+Bio::Graphics::Glyph::decorated_transcript instead of the 
+Bio::Graphics::Glyph::processed_transcript to render transcripts, which allows
+sequence features to be highlighted on top of gene models. This functionality is for example 
+useful when one wants to assess how different splice forms of the same gene differ 
+in terms of encoded protein features, such as protein domains, signal peptides, or 
+transmembrane regions.
 
-One usecase for the \'decorated_gene\' glyph is to highlight protein features 
-of different splice forms of the same gene to see how splice forms differ in terms of protein 
-features, for example the presence of predicted signal peptides or protein domains. 
-
-See Bio::Graphics::Glyph::decorated_transcript for a description of how to provide 
-protein decorations for transcripts.  
+See Bio::Graphics::Glyph::decorated_transcript for a detailed description of how to 
+provide protein decorations for transcripts.  
 END
 }
 
@@ -238,16 +238,16 @@ Bio::Graphics::Glyph::decorated_gene - A GFF3-compatible gene glyph with protein
 
 =head1 DESCRIPTION
 
-This glyph has the same functionality as the L<Bio::Graphics::Glyph::gene> glyph, but uses
-the L<Bio::Graphics::Glyph::decorated_transcript> glyph instead of the 
-L<Bio::Graphics::Glyph::processed_transcript> glyph to draw transcripts. 
+This glyph has the same functionality as L<Bio::Graphics::Glyph::gene>, but uses
+L<Bio::Graphics::Glyph::decorated_transcript> instead of the 
+L<Bio::Graphics::Glyph::processed_transcript> to render transcripts, which allows
+sequence features to be highlighted on top of gene models. This functionality is for example 
+useful when one wants to assess how different splice forms of the same gene differ 
+in terms of encoded protein features, such as protein domains, signal peptides, or 
+transmembrane regions.
 
-One usecase for the 'decorated_gene' glyph is to highlight protein features 
-of different splice forms of the same gene to see how splice forms differ in terms of protein 
-features, for example the presence of predicted signal peptides or protein domains. 
-
-See L<Bio::Graphics::Glyph::decorated_transcript> for a description of how to provide 
-protein decorations for transcripts.  
+See L<Bio::Graphics::Glyph::decorated_transcript> for a detailed description of how 
+to provide protein decorations for transcripts.  
 
 =head1 BUGS
 
