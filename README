@@ -1,15 +1,21 @@
 Bio-Graphics-Glyph-decorated_gene version 0.01
 ==============================================
 
-The two glyphs in this package extend the functionality of the Bio::Graphics::Glyph::gene 
-and the Bio::Graphics::Glyph::processed_transcript glyph and allows to draw protein decorations 
-(e.g., signal peptides, transmembrane domains, protein domains) on top of gene models. Currently, 
-the glyph can draw decorations in form of colored or outlined boxes inside or around CDS segments. 
+This package contains two BioPerl glyphs, Bio::Graphics::Glyph::decorated_gene and
+Bio::Graphics::Glyph::decorated_transcript, that extend the functionality of BioPerl's
+'gene' and 'processed_transcript' glyphs by drawing and labeling protein decorations 
+(such as signal peptides, transmembrane domains, protein domains) on top of gene models. 
+
+Currently, decorations can be drawn in the form of colored or outlined boxes inside or around CDS segments. 
 Protein decorations are specified at the 'mRNA' transcript level in protein coordinates. Protein 
-coordinates are automatically mapped to nucleotide coordinates by the glyph. Decorations are allowed 
-to span exon-exon junctions, in which case decorations are split between exons. By default, the 
-glyph automatically assigns different colors to different types of protein decorations, whereas 
-decorations of the same type are always assigned the same color. 
+coordinates are then automatically mapped to nucleotide coordinates by the glyphs. Decorations are allowed 
+to span exon-exon junctions, in which case decorations are split between exons. By default, different 
+colors are assigned automatically to different types of protein decorations, whereas 
+decorations of the same type are assigned the same color. 
+
+Please refer to module descriptions of Bio::Graphics::Glyph::decorated_gene and 
+Bio::Graphics::Glyph::decorated_transcript for a detailed description of how to 
+use and parameterize the glyphs.
 
 INSTALLATION
 
@@ -25,6 +31,8 @@ DEPENDENCIES
 This module requires these other modules and libraries:
 
   Bio::Graphics
+  List::Util
+  GD::SVG
   
 COPYRIGHT AND LICENCE
 
