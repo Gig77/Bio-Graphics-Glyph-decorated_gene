@@ -7,7 +7,7 @@
 use strict;
 use warnings;
 
-use Test::More tests => 18;
+use Test::More tests => 21;
 BEGIN { 
 	use_ok('Bio::Graphics::Glyph::decorated_transcript'); 
 	use_ok('Bio::Graphics'); 
@@ -52,19 +52,24 @@ $panel->add_track(
 );
 ok(1, 'ruler made');
 
-$panel->add_track
-(
-	$test,
-	-label => 1,
-	-glyph => 'decorated_gene',
-	-decoration_visible => 1,	
-	-height => 12,
-	-decoration_color		=> 'white',
-	-decoration_label_position => 'inside',
-	-decoration_label_color => 'black',
-	-description => 1
-);
-ok(1, 'track1 added');
+{
+	my $warn_ok = 0;
+	local $SIG{__WARN__} = sub { $warn_ok = 1 if ($_[0] =~ /WARNING: could not map/); };
+	$panel->add_track
+	(
+		$test,
+		-label => 1,
+		-glyph => 'decorated_gene',
+		-decoration_visible => 1,	
+		-height => 12,
+		-decoration_color		=> 'white',
+		-decoration_label_position => 'inside',
+		-decoration_label_color => 'black',
+		-description => 1
+	);
+	ok($warn_ok, 'expected warning');
+	ok(1, 'track1 added');	
+}
 
 $panel->add_track
 (
@@ -80,24 +85,36 @@ $panel->add_track
 );
 ok(1, 'track2 added');
 
-$panel->add_track
-(
-	$test2,
-	-label => 1,
-	-glyph => 'decorated_gene',
-	-decoration_visible => 1,	
-	-height => 12,
-	-decoration_color		=> 'white',
-	-decoration_label_position => 'inside',
-	-decoration_label_color => 'black',
-	-description => 1
-);
-ok(1, 'track3 added');
-
+{
+	my $warn_ok = 0;
+	local $SIG{__WARN__} = sub { $warn_ok = 1 if ($_[0] =~ /WARNING: invalid decoration data/); };
+	$panel->add_track
+	(
+		$test2,
+		-label => 1,
+		-glyph => 'decorated_gene',
+		-decoration_visible => 1,	
+		-height => 12,
+		-decoration_color		=> 'white',
+		-decoration_label_position => 'inside',
+		-decoration_label_color => 'black',
+		-description => 1
+	);
+	ok($warn_ok, 'expected warning');
+	ok(1, 'track3 added');
+}
 
 # write image
-my $png = $panel->png;
-is($png,$panel->png,'png created');
+my $png;
+{
+	my $warn_ok = 0;
+	local $SIG{__WARN__} = sub { $warn_ok = 1 if ($_[0] =~ /WARNING: could not map/); };
+	
+	$png = $panel->png;
+	
+	ok($warn_ok, 'expected warning');
+	is($png,$panel->png,'png created');
+}
 my $imgfile = "t/data/invalid.png";
 unlink($imgfile);
 open(IMG,">$imgfile") or die "could not write to file $imgfile";
