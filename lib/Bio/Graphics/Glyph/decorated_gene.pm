@@ -4,7 +4,7 @@ use strict;
 use vars qw($VERSION);
 use base 'Bio::Graphics::Glyph::decorated_transcript';
 
-$VERSION = '0.01';
+$VERSION = '0.02';
 
 sub my_descripton {
     return <<END;

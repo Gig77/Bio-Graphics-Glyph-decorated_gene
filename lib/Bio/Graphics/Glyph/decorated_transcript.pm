@@ -7,7 +7,7 @@ use Bio::Graphics::Panel;
 use List::Util qw[min max];
 use vars qw($VERSION);
 
-$VERSION = '0.01';
+$VERSION = '0.02';
 
 use constant DECORATION_TAG_NAME => 'protein_decorations';
 use constant DEBUG              => 0;
