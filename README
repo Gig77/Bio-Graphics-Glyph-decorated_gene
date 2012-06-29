@@ -1,4 +1,4 @@
-Bio-Graphics-Glyph-decorated_gene version 0.02
+Bio-Graphics-Glyph-decorated_gene version 0.03
 ==============================================
 
 This package contains two BioPerl glyphs, Bio::Graphics::Glyph::decorated_gene and Bio::Graphics::Glyph::decorated_transcript, that extend the functionality of BioPerl's 'gene' and 'processed_transcript' glyphs by drawing and labeling protein decorations (such as signal peptides, transmembrane domains, protein domains) on top of gene models. 
