@@ -40,21 +40,26 @@ my @args = (	-length    => $gene_minus->end-$gene_minus->start+102,
 	-key_style => 'between',
 	-width     => 1024,
 	-pad_left  => 100);
+
 my $panel = new_ok('Bio::Graphics::Panel' => \@args);
-my @args2 = (	-length    => $gene_minus->end-$gene_minus->start+102,
-	-offset     => $gene_minus->start-100,
-	-key_style => 'between',
-	-width     => 1024,
-	-pad_left  => 100,
-	-image_class=>'GD::SVG');
-my $panel2 = new_ok('Bio::Graphics::Panel' => \@args2);
-
-
 can_ok($panel, qw(add_track));
-can_ok($panel2, qw(add_track));
-
 add_tracks($panel);
-add_tracks($panel2);
+
+my $panel2;
+SKIP: {
+    eval{ require GD::SVG };
+    skip "GD::SVG not installed", 10 if $@;
+
+	my @args2 = (	-length    => $gene_minus->end-$gene_minus->start+102,
+		-offset     => $gene_minus->start-100,
+		-key_style => 'between',
+		-width     => 1024,
+		-pad_left  => 100,
+		-image_class=>'GD::SVG');
+	$panel2 = new_ok('Bio::Graphics::Panel' => \@args2);
+	can_ok($panel2, qw(add_track));
+	add_tracks($panel2);
+}
 
 sub add_tracks{
 my $panel = shift;
@@ -156,14 +161,18 @@ ok(-e $imgfile, 'imgfile created');
 my $filesize = -s $imgfile;
 isnt($filesize,0, 'check nonzero filesize');
 
-my $svg = $panel2->svg;
-#is($svg,$panel2->svg,'svg created');
-my $svgfile = "t/data/heights.svg";
-system("rm $svgfile") if (-e $svgfile);
-open(IMG,">$svgfile") or die "could not write to file $svgfile";
-print IMG $svg;
-close(IMG);
-ok(-e $svgfile, 'svgfile created');
-$filesize = -s $svgfile;
-isnt($filesize,0, 'check nonzero filesize');
+SKIP: {
+    eval{ require GD::SVG };
+    skip "GD::SVG not installed", 2 if $@;
 
+	my $svg = $panel2->svg;
+	#is($svg,$panel2->svg,'svg created');
+	my $svgfile = "t/data/heights.svg";
+	system("rm $svgfile") if (-e $svgfile);
+	open(IMG,">$svgfile") or die "could not write to file $svgfile";
+	print IMG $svg;
+	close(IMG);
+	ok(-e $svgfile, 'svgfile created');
+	$filesize = -s $svgfile;
+	isnt($filesize,0, 'check nonzero filesize');
+}

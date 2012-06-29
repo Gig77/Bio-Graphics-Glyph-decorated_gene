@@ -38,74 +38,81 @@ my @args = (	-length    => $gene_minus->end-$gene_minus->start+102,
 	-key_style => 'between',
 	-width     => 1024,
 	-pad_left  => 100);
+
 my $panel = new_ok('Bio::Graphics::Panel' => \@args);
-my @args2 = (	-length    => $gene_minus->end-$gene_minus->start+102,
-	-offset     => $gene_minus->start-100,
-	-key_style => 'between',
-	-width     => 1024,
-	-pad_left  => 100,
-	-image_class=>'GD::SVG');
-my $panel2 = new_ok('Bio::Graphics::Panel' => \@args2);
-
 can_ok($panel, qw(add_track));
-can_ok($panel2, qw(add_track));
-
 add_tracks($panel);
-add_tracks($panel2);
 
-sub add_tracks{
-my $panel = shift;
+my $panel2;
+SKIP: {
+    eval{ require GD::SVG };
+    skip "GD::SVG not installed", 6 if $@;
 
-# ruler
-$panel->add_track(
-	Bio::Graphics::Feature->new(-start => $gene_minus->start-100, -end => $gene_minus->end),
-	-glyph  => 'arrow',
-	-bump   => 0,
-	-double => 1,
-	-tick   => 2
-);
+	my @args2 = (	-length    => $gene_minus->end-$gene_minus->start+102,
+		-offset     => $gene_minus->start-100,
+		-key_style => 'between',
+		-width     => 1024,
+		-pad_left  => 100,
+		-image_class=>'GD::SVG');
+	$panel2 = new_ok('Bio::Graphics::Panel' => \@args2);
+	can_ok($panel2, qw(add_track));
+	add_tracks($panel2);
+}
 
-ok(1, 'ruler made');
+sub add_tracks
+{
+	my $panel = shift;
+	
+	# ruler
+	$panel->add_track(
+		Bio::Graphics::Feature->new(-start => $gene_minus->start-100, -end => $gene_minus->end),
+		-glyph  => 'arrow',
+		-bump   => 0,
+		-double => 1,
+		-tick   => 2
+	);
+	
+	ok(1, 'ruler made');
+	
+	$panel->add_track
+	(
+		$gene_minus,
+		-description => sub { "default color for decorations"},
+		-glyph => 'decorated_gene',
+		-decoration_visible => 1,	
+		-height => 12,
+		-decoration_color		=> ''
+	);
+	ok(1,'track1 added');
+	
+	$panel->add_track
+	(
+		$gene_minus,
+		-description => sub { "yellow color for decorations"},
+		-glyph => 'decorated_gene',
+		-decoration_visible => 1,	
+		-height => 12,
+		-decoration_color		=> 'yellow'
+	);
+	ok(1,'track2 added');
+	
+	$panel->add_track
+	(
+		$gene_minus,
+		-description => sub {"TM: red, SP: white, VTS: default"},
+		-glyph => 'decorated_gene',
+		-decoration_visible => 1,
+		-height => 12,
+		-decoration_color	=> sub { 
+				my ($feature, $option_name, $part_no, $total_parts, $glyph) = @_;	
+				return 'red' if ($glyph->active_decoration->name eq "TM");
+				return 'white' if ($glyph->active_decoration->type eq "SignalP4");
+				return '';
+		},
+	);
+	ok(1,'track3 added');
+}
 
-$panel->add_track
-(
-	$gene_minus,
-	-description => sub { "default color for decorations"},
-	-glyph => 'decorated_gene',
-	-decoration_visible => 1,	
-	-height => 12,
-	-decoration_color		=> ''
-);
-ok(1,'track1 added');
-
-$panel->add_track
-(
-	$gene_minus,
-	-description => sub { "yellow color for decorations"},
-	-glyph => 'decorated_gene',
-	-decoration_visible => 1,	
-	-height => 12,
-	-decoration_color		=> 'yellow'
-);
-ok(1,'track2 added');
-
-$panel->add_track
-(
-	$gene_minus,
-	-description => sub {"TM: red, SP: white, VTS: default"},
-	-glyph => 'decorated_gene',
-	-decoration_visible => 1,
-	-height => 12,
-	-decoration_color	=> sub { 
-			my ($feature, $option_name, $part_no, $total_parts, $glyph) = @_;	
-			return 'red' if ($glyph->active_decoration->name eq "TM");
-			return 'white' if ($glyph->active_decoration->type eq "SignalP4");
-			return '';
-	},
-);
-ok(1,'track3 added');
-
-};
 # write image
 my $png = $panel->png;
 is($png,$panel->png,'png created');
@@ -118,13 +125,18 @@ ok(-e $imgfile, 'imgfile created');
 my $filesize = -s $imgfile;
 isnt($filesize,0, 'check nonzero filesize');
 
-my $svg = $panel2->svg;
-#is($svg,$panel2->svg,'svg created');
-my $svgfile = "t/data/colours.svg";
-system("rm $svgfile") if (-e $svgfile);
-open(IMG,">$svgfile") or die "could not write to file $svgfile";
-print IMG $svg;
-close(IMG);
-ok(-e $svgfile, 'svgfile created');
-$filesize = -s $svgfile;
-isnt($filesize,0, 'check nonzero filesize');
+SKIP: {
+    eval{ require GD::SVG };
+    skip "GD::SVG not installed", 2 if $@;
+
+	my $svg = $panel2->svg;
+	#is($svg,$panel2->svg,'svg created');
+	my $svgfile = "t/data/colours.svg";
+	system("rm $svgfile") if (-e $svgfile);
+	open(IMG,">$svgfile") or die "could not write to file $svgfile";
+	print IMG $svg;
+	close(IMG);
+	ok(-e $svgfile, 'svgfile created');
+	$filesize = -s $svgfile;
+	isnt($filesize,0, 'check nonzero filesize');
+}
